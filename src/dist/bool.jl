@@ -1,4 +1,3 @@
-
 export flip, prob_equals, AnyBool, expectation, variance, foreach_node, flip_prob!
 
 ##################################
@@ -27,7 +26,7 @@ mutable struct Flip <: Dist{Bool}
 end
 
 function Base.show(io::IO, f::Flip)
-    p = round(f.prob, digits=2)
+    p = if f.prob isa AbstractFloat round(f.prob, digits=2) else f.prob end
     if isnothing(f.name)
         print(io, "$(typeof(f))($(f.global_id),$(p))")
     else

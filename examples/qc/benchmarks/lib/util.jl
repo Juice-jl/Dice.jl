@@ -106,14 +106,14 @@ function opt_stlc_str(ast)
     end
 end
 
-function save_metric_dist(filename, metric_name, dist; io=stdout)
+function save_metric_dist(filename, dist; io)
     open(filename, "w") do file
-        println(file, "$(metric_name)\tprobability")
+        println(file, "val\tprobability")
         for i in key_range(dist)
             println(file, "$(i)\t$(dist[i])")
         end
     end
-    println(io, "Saved $(metric_name) dist to $(filename).")
+    println(io, "Saved metric dist to $(filename).")
 end
 
 key_range(d) = minimum(keys(d)):maximum(keys(d))

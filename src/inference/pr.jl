@@ -1,4 +1,4 @@
-export pr, Cudd, CuddDebugInfo
+export Cudd, CuddDebugInfo
 
 using DataStructures: OrderedDict
 
@@ -23,7 +23,7 @@ function get_world_probs(w::WMC, query::JointQuery, evidence::AnyBool)
     evid_logp = logprob(w, evid_bdd)
 
     # get values of adnodes
-    vals = Dict{ADNode, Real}()
+    vals = Dict{ADNode, ADNodeCompatible}()
 
     # TODO should query bits be made unique to save time?    
     states = Pair{LinkedList, Float64}[]
@@ -31,7 +31,7 @@ function get_world_probs(w::WMC, query::JointQuery, evidence::AnyBool)
     function rec(context::CuddNode, state, rembits)
         issat(w.c.mgr, context) || return
         if isempty(rembits)
-            p = exp(logprob(w, context, vals) - evid_logp)
+            p = exp(logprob(w, context) - evid_logp)
             push!(states, state => p)
         else
             head = rembits[1]
@@ -52,7 +52,7 @@ function get_world_probs(w::WMC, query::JointQuery, evidence::AnyBool)
 end
 
 
-function pr(cudd::Cudd, evidence, queries::Vector{JointQuery}, errors, dots)
+function pr_impl(cudd::Cudd, evidence, queries::Vector{JointQuery}, errors, dots)
     w = WMC(
         BDDCompiler(Iterators.flatten((
             Iterators.flatten(query.bits for query in queries),

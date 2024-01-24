@@ -1,5 +1,5 @@
 export condprobs, condprob, Cudd, CuddDebugInfo, ProbException, allobservations, JointQuery, 
-    returnvalue, expectation, variance, kldivergence, tvdistance, entropy
+    returnvalue, expectation, variance, kldivergence, tvdistance, entropy, pr
 
 using DataStructures: DefaultDict, DefaultOrderedDict, OrderedDict
 
@@ -27,7 +27,7 @@ function pr(queries::Vector{JointQuery}; evidence::AnyBool = true,
             errors::Vector{CondError} = CondError[],
             dots::Vector{Tuple{Vector{AnyBool}, String}} = Tuple{Vector{AnyBool}, String}[],
             algo::InferAlgo = default_infer_algo()) 
-    pr(algo, evidence, queries, errors, dots)
+    pr_impl(algo, evidence, queries, errors, dots)
 end
 
 function pr(queries::JointQuery...; kwargs...)
@@ -164,12 +164,5 @@ include("cudd/wmc.jl")
 # Notable exports:
 # - pr(::Dist, evidence=..., errors=...)
 include("pr.jl")
-
-# Exposes functionality for changing the probabilities of flip_for's
-# to maximize a list of (possibly conditional) bools
-# Notable exports:
-# - train_group_probs!(::Vector{<:AnyBool}))
-# - train_group_probs!(::Vector{<:Tuple{<:AnyBool, <:AnyBool}})
-include("train.jl")
 
 include("sample.jl")

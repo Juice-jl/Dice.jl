@@ -31,9 +31,12 @@ macro dice_ite(code)
     end
 end
 
-include("autodiff.jl")
+include("autodiff/adnode.jl")
+include("autodiff/core.jl")
 include("dist/dist.jl")
 include("inference/inference.jl")
+include("autodiff_pr/train.jl")
+include("autodiff_pr/losses.jl")
 include("analysis/analysis.jl")
 include("dsl.jl")
 include("plot.jl")

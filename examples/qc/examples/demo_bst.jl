@@ -3,11 +3,21 @@
 using Dice
 include("lib/dist_tree.jl")     # DistLeaf, DistBranch, depth
 
+var_vals = Valuation()
+adnodes_of_interest = Dict{String, ADNode}()
+function register_weight!(s)
+    var = Var("$(s)_before_sigmoid")
+    var_vals[var] = 0
+    weight = sigmoid(var)
+    adnodes_of_interest[s] = weight
+    weight
+end
+
 # Return tree
 function gen_bst(size, lo, hi)
     # Try changing the parameter to flip_for to a constant, which would force
     # all sizes to use the same probability.
-    @dice_ite if size == 0 || flip_for(size)
+    @dice_ite if size == 0 || flip(register_weight!("sz$(size)"))
         DistLeaf(DistUInt32)
     else
         # The flips used in the uniform aren't tracked via flip_for, so we
@@ -33,25 +43,28 @@ tree = gen_bst(
 tree_depth = depth(tree)
 
 println("Distribution before training:")
-display(pr(tree_depth))
+display(pr_mixed(var_vals)(tree_depth))
 println()
 
-bools_to_maximize = [prob_equals(tree_depth, x) for x in DATASET]
-train_group_probs!(bools_to_maximize, 1000, 0.3)  # epochs and lr
+train!(var_vals, mle_loss([prob_equals(tree_depth, x) for x in DATASET]), epochs=1000, learning_rate=0.3)
 
 # Done!
 println("Learned flip probability for each size:")
-display(get_group_probs())
+vals = compute(var_vals, values(adnodes_of_interest))
+show(Dict(s => vals[adnode] for (s, adnode) in adnodes_of_interest))
+println()
 println()
 
 println("Distribution over depths after training:")
-display(pr(tree_depth))
+display(pr_mixed(var_vals)(tree_depth))
 println()
 
 println("A few sampled trees:")
-for _ in 1:3
-    print_tree(sample(tree))
-    println()
+with_concrete_ad_flips(var_vals, tree) do
+    for _ in 1:3
+        print_tree(sample(tree))
+        println()
+    end
 end
 
 #==

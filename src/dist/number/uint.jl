@@ -424,7 +424,7 @@ end
 # Uniform from 0 to hi, exclusive
 function unif_half(hi::DistUInt{W})::DistUInt{W} where W
     # note: # could use path cond too
-    prod = lcm([BigInt(x) for x in keys(pr(hi)) if x != 0])
+    prod = lcm([BigInt(x) for x in support_mixed(hi) if x != 0])
     u = uniform(DistUInt{ndigits(prod, base=2)}, 0, prod)
     rem_trunc(u, hi)
 end

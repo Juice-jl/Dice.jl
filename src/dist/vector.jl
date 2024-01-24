@@ -97,6 +97,7 @@ end
 
 dummy(::Type{DistString}) = DistString("dummy")
 dummy(::Type{DistUInt32}) = DistUInt32(555)
+dummy(::Type{DistInt32}) = DistInt32(555)
 
 function prob_getindex(d::DistVector{T}, idx::DistUInt32) where T
     ans = if isempty(d.contents) dummy(T) else d.contents[1] end
@@ -217,9 +218,10 @@ function choice_obs(v::DistVector{T})::Tuple{T, AnyBool} where T
 end
 
 function choice(v::DistVector{T})::T where T
-    if prob_equals(v.len, DistUInt32(0))
-        return dummy(T)
+    @dice_ite if prob_equals(v.len, DistUInt32(0))
+        dummy(T)
+    else
+        i = unif(DistUInt32(1), v.len)
+        prob_getindex(v, i)
     end
-    i = unif(DistUInt32(1), v.len)
-    prob_getindex(v, i)
 end
